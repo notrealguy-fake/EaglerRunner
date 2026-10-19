@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gpuinfo</title>
+</head>
+<body style="margin:0;background:#10141c;color:#e8edf5;font-family:Consolas,monospace">
+<canvas id="gl" width="640" height="300" style="display:block"></canvas>
+<pre id="out" style="padding:12px;font-size:13px;line-height:1.6">measuring...</pre>
+<script>
+// gpuinfo.html - reports the WebGL renderer and an uncapped frame rate.
+//
+// Open it with EaglerRunner (or any browser) and read the window title:
+//   GPUINFO fps=.. | ANGLE (...GPU...)      -> hardware acceleration is active
+//   GPUINFO fps=.. | Google SwiftShader     -> software rendering (slow)
+(function () {
+  "use strict";
+  var out = document.getElementById("out");
+  var lines = [];
+  function push(text) {
+    lines.push(text);
+    out.textContent = lines.join("\n");
+  }
+
+  var canvas = document.getElementById("gl");
+  var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  if (!gl) {
+    document.title = "GPUINFO no-webgl";
+    push("WebGL is not available.");
+    return;
+  }
+
+  var info = gl.getExtension("WEBGL_debug_renderer_info");
+  var vendor = info ? gl.getParameter(info.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+  var renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  push("vendor:   " + vendor);
+  push("renderer: " + renderer);
+  document.title = "GPUINFO | " + renderer;
+
+  var vs = [
+    "attribute vec2 p;",
+    "uniform float t;",
+    "void main(){",
+    "  float s = sin(t), c = cos(t);",
+    "  gl_Position = vec4(mat2(c, -s, s, c) * p, 0.0, 1.0);",
+    "}"
+  ].join("\n");
+  var fs = "precision mediump float; void main(){ gl_FragColor = vec4(0.42, 0.8, 0.3, 1.0); }";
+
+  function compile(type, src) {
+    var sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    return sh;
+  }
+
+  var prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.8, -0.8, 0.8, -0.8, 0.0, 0.9]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  var tLoc = gl.getUniformLocation(prog, "t");
+
+  var frames = 0;
+  var t0 = 0;
+  var drawsPerFrame = 300;  // heavy enough that a software rasterizer collapses
+  function frame(t) {
+    if (!t0) t0 = t;
+    gl.clearColor(0.05, 0.11, 0.18, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(tLoc, t / 1000);
+    for (var i = 0; i < drawsPerFrame; i++) {
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    frames += 1;
+
+    var elapsed = t - t0;
+    if (elapsed >= 4000) {
+      var fps = frames * 1000 / elapsed;
+      var name = String(renderer);
+      var software = /basic render driver|swiftshader|llvmpipe|softpipe|software|warp/i.test(name);
+      push("fps:      " + fps.toFixed(1) + " (uncapped, " + drawsPerFrame + " draws/frame)");
+      push("verdict:  " + (software ? "SOFTWARE RENDERING (slow)" : "hardware OK"));
+      document.title = "GPUINFO fps=" + fps.toFixed(1) + " | " + renderer;
+      return;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
