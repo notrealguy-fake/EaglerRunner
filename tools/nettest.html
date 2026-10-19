@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NETTEST running</title>
+<style>
+  body { background:#141414; color:#dcdcdc; font: 13px Consolas, monospace; margin:0; padding:18px; }
+  h1 { font-size:16px; letter-spacing:2px; }
+  pre { background:#000; border:2px solid #333; padding:12px; min-height:220px; white-space:pre-wrap; }
+  .ok { color:#7cd44f; } .bad { color:#ff7a5c; } .dim { color:#888; }
+</style>
+</head>
+<body>
+<h1>EAGLERRUNNER NETWORK SELF TEST</h1>
+<p class="dim">Needs <code>tools/echoserver.ps1</code> running (TCP 25599, UDP 25598).
+   The window title reports the result so it can be checked automatically.</p>
+<pre id="log"></pre>
+
+<script>
+(function () {
+  "use strict";
+  var logEl = document.getElementById("log");
+  var tcpOk = false, udpOk = false, finished = false;
+
+  function log(text, cls) {
+    var span = document.createElement("span");
+    if (cls) span.className = cls;
+    span.textContent = text + "\n";
+    logEl.appendChild(span);
+  }
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    var pass = tcpOk && udpOk;
+    document.title = (pass ? "NETTEST PASS" : "NETTEST FAIL") +
+                     " tcp=" + (tcpOk ? 1 : 0) + " udp=" + (udpOk ? 1 : 0);
+    log(pass ? "RESULT: PASS" : "RESULT: FAIL", pass ? "ok" : "bad");
+  }
+
+  if (!window.eaglerNet) {
+    log("eaglerNet bridge missing - app not wrapping this page?", "bad");
+    document.title = "NETTEST FAIL nobridge";
+    return;
+  }
+
+  var net = window.eaglerNet;
+
+  net.on("open", function (e) { log("[open]  " + e.type + " " + e.id); });
+
+  net.on("error", function (e) {
+    log("[error] " + e.type + " " + e.id + ": " + e.message, "bad");
+  });
+
+  net.on("close", function (e) { log("[close] " + e.type + " " + e.id); });
+
+  net.on("data", function (e) {
+    var text = "";
+    for (var i = 0; i < e.data.length; i++) text += String.fromCharCode(e.data[i]);
+    if (e.type === "tcp") {
+      log("[data]  tcp " + e.id + " <- " + JSON.stringify(text));
+      if (text.indexOf("ping-tcp") === 0) { tcpOk = true; log("TCP echo verified", "ok"); startUdp(); }
+    } else {
+      log("[data]  udp " + e.id + " <- " + JSON.stringify(text) + " from " + e.host + ":" + e.port);
+      if (text.indexOf("ping-udp") === 0) { udpOk = true; log("UDP echo verified", "ok"); finish(); }
+    }
+  });
+
+  function startTcp() {
+    log("TCP connecting to 127.0.0.1:25599 ...");
+    var id = net.tcp.connect("127.0.0.1", 25599, { id: "tcp-test" });
+    setTimeout(function () {
+      log("sending ping-tcp");
+      net.tcp.send(id, "ping-tcp");
+    }, 400);
+  }
+
+  function startUdp() {
+    log("UDP opening socket ...");
+    var id = net.udp.open(0, { id: "udp-test" });
+    net.on("open", function handler(e) {
+      if (e.type !== "udp" || e.id !== id) return;
+      net.off("open", handler);
+      log("UDP bound to local port " + e.port + ", sending ping-udp");
+      setTimeout(function () { net.udp.send(id, "127.0.0.1", 25598, "ping-udp"); }, 200);
+    });
+  }
+
+  setTimeout(startTcp, 300);
+  setTimeout(finish, 7000);
+})();
+</script>
+</body>
+</html>

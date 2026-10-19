@@ -1,0 +1,18 @@
+# build output
+build/
+dist/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+CMakeSettings.json
+
+# WebView2 SDK (fetched on demand by third_party/fetch_webview2.ps1)
+third_party/webview2/
+third_party/webview2.nupkg
+
+# local scratch / test clients
+/1.21.11-wasm.html
+*.log

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="EaglerRunner">
+  <defs>
+    <linearGradient id="er-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3346"/>
+      <stop offset="1" stop-color="#141822"/>
+    </linearGradient>
+    <linearGradient id="er-grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a8e563"/>
+      <stop offset="0.45" stop-color="#7cc93c"/>
+      <stop offset="1" stop-color="#55a028"/>
+    </linearGradient>
+    <linearGradient id="er-dirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9d6c40"/>
+      <stop offset="1" stop-color="#6d4525"/>
+    </linearGradient>
+    <linearGradient id="er-play" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e4ffd8"/>
+    </linearGradient>
+    <linearGradient id="er-shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="er-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#67e02a" flood-opacity="0.5"/>
+    </filter>
+    <filter id="er-drop" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- App badge -->
+  <rect x="4" y="4" width="120" height="120" rx="27" fill="url(#er-bg)"/>
+  <rect x="5" y="5" width="118" height="118" rx="26" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="2"/>
+  <path d="M8 46 L46 8 L74 8 L8 74 Z" fill="url(#er-shine)"/>
+
+  <!-- Grass block -->
+  <g filter="url(#er-drop)" shape-rendering="crispEdges">
+    <rect x="28" y="32" width="72" height="72" fill="url(#er-dirt)"/>
+    <rect x="28" y="32" width="72" height="27" fill="url(#er-grass)"/>
+    <!-- grass highlights / shadows -->
+    <rect x="28" y="32" width="72" height="3" fill="#c8f287" opacity="0.85"/>
+    <rect x="28" y="56" width="72" height="3" fill="#3c7a1c" opacity="0.75"/>
+    <rect x="37" y="41" width="9" height="9" fill="#a4e85e" opacity="0.9"/>
+    <rect x="64" y="35" width="9" height="9" fill="#8fd94c" opacity="0.9"/>
+    <rect x="82" y="44" width="9" height="9" fill="#69b331" opacity="0.9"/>
+    <rect x="46" y="50" width="9" height="9" fill="#5ea22c" opacity="0.85"/>
+    <!-- dirt speckles -->
+    <rect x="37" y="68" width="9" height="9" fill="#aa7a4c" opacity="0.9"/>
+    <rect x="73" y="77" width="9" height="9" fill="#aa7a4c" opacity="0.9"/>
+    <rect x="55" y="86" width="9" height="9" fill="#8a5c33" opacity="0.9"/>
+    <rect x="82" y="95" width="9" height="9" fill="#8a5c33" opacity="0.9"/>
+    <rect x="46" y="95" width="9" height="9" fill="#5c3a1f" opacity="0.9"/>
+    <rect x="64" y="59" width="9" height="9" fill="#5c3a1f" opacity="0.7"/>
+    <!-- block outline -->
+    <rect x="28.5" y="32.5" width="71" height="71" fill="none" stroke="#10141c" stroke-opacity="0.55" stroke-width="1"/>
+  </g>
+
+  <!-- Play mark -->
+  <g filter="url(#er-glow)">
+    <path d="M56 50 L56 86 L86 68 Z" fill="url(#er-play)" stroke="#1c2413" stroke-width="2.5"
+          stroke-linejoin="round"/>
+  </g>
+</svg>
